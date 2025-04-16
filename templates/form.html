@@ -9,12 +9,12 @@
 <body>
   <div class="container">
     <h1>Заполните данные для договора</h1>
-    <form method="POST" action="/">
+    <form method="POST" action="/" onsubmit="return validateDates()">
       <label for="full_name">ФИО туриста:</label>
       <input type="text" id="full_name" name="full_name" required><br>
 
-      <label for="date_birth">Дата рождения:</label>
-      <input type="date" id="date_birth" name="date_birth" required><br>
+      <label for="date_birth">Дата рождения (дд.мм.гггг):</label>
+      <input type="text" id="date_birth" name="date_birth" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
 
       <label for="iin">ИИН:</label>
       <input type="text" id="iin" name="iin" required><br>
@@ -25,71 +25,32 @@
       <label for="contract_number">Номер договора:</label>
       <input type="text" id="contract_number" name="contract_number" required><br>
 
-      <label for="date">Дата:</label>
-      <input type="date" id="date" name="date" required><br>
+      <label for="date">Дата (дд.мм.гггг):</label>
+      <input type="text" id="date" name="date" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
 
       <h3>Доп. туристы</h3>
-      
       <div id="tourists_fields"></div>
       <button type="button" onclick="addTouristField()">Добавить туриста</button> <br>
 
+      <label for="start_date">Дата заезда (дд.мм.гггг):</label>
+      <input type="text" id="start_date" name="start_date" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
+
+      <label for="end_date">Дата выезда (дд.мм.гггг):</label>
+      <input type="text" id="end_date" name="end_date" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
+
       <label for="night_num">Кол-во ночей:</label>
-      <input type="text" id="night_num" name="night_num" required><br>
+      <div class="night-num-container">
+        <input type="text" id="night_num" name="night_num" required>
+        <button type="button" onclick="calculateNights()">Пересчитать</button>
+      </div><br>
 
-      <label for="start_date">Дата заезда:</label>
-      <input type="date" id="start_date" name="start_date" required><br>
-
-      <label for="end_date">Дата выезда:</label>
-      <input type="date" id="end_date" name="end_date" required><br>
+      <label for="with_treatment">С лечением:</label>
+      <input type="checkbox" id="with_treatment" name="with_treatment"><br>
 
       <button type="submit">Сгенерировать документ</button>
     </form>
   </div>
 
-  <script>
-    let touristCount = 0;
-
-    function addTouristField() {
-      const container = document.getElementById("tourists_fields");
-      const touristDiv = document.createElement("div");
-      touristDiv.className = "tourist-field";
-      touristDiv.id = `tourist_${touristCount}`;
-
-      const label = document.createElement("label");
-      label.textContent = `ФИО туриста ${touristCount + 1}:`;
-      const input = document.createElement("input");
-      input.type = "text";
-      input.name = `tourist_${touristCount}`;
-      input.required = true;
-      const removeButton = document.createElement("button");
-      removeButton.type = "button";
-      removeButton.textContent = "Убрать туриста";
-      removeButton.onclick = () => removeTouristField(touristDiv.id);
-      const br = document.createElement("br");
-
-      touristDiv.appendChild(label);
-      touristDiv.appendChild(input);
-      touristDiv.appendChild(removeButton);
-      touristDiv.appendChild(br);
-      container.appendChild(touristDiv);
-
-      touristCount++;
-    }
-
-    function removeTouristField(fieldId) {
-      const field = document.getElementById(fieldId);
-      field.remove();
-      // Пересчитываем номера туристов
-      const fields = document.querySelectorAll(".tourist-field");
-      fields.forEach((field, index) => {
-        const label = field.querySelector("label");
-        label.textContent = `ФИО туриста ${index + 1}:`;
-        const input = field.querySelector("input");
-        input.name = `tourist_${index}`;
-        field.id = `tourist_${index}`;
-      });
-      touristCount = fields.length;
-    }
-  </script>
+  <script src="/static/script.js"></script>
 </body>
 </html>

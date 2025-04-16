@@ -20,7 +20,7 @@ def format_date(date_str):
         5: "мая", 6: "июня", 7: "июля", 8: "августа",
         9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"
     }
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    date_obj = datetime.strptime(date_str, "%d.%m.%Y")
     day = date_obj.day
     month = months[date_obj.month]
     year = date_obj.year
@@ -28,7 +28,7 @@ def format_date(date_str):
 
 # Функция для преобразования даты в формат "дд.мм.гггг г."
 def format_tour_date(date_str):
-    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    date_obj = datetime.strptime(date_str, "%d.%m.%Y")
     day = date_obj.day
     month = date_obj.month  
     year = date_obj.year
@@ -67,6 +67,7 @@ def generate_doc():
         end_date = request.form["end_date"]
         date_birth = request.form["date_birth"]
         iin = request.form["iin"]
+        with_treatment = request.form.get("with_treatment") == "on"
 
         # Формируем список туристов, начиная с full_name
         tourists = [f"1) {full_name}"]
@@ -90,6 +91,9 @@ def generate_doc():
             # Форматируем количество ночей с правильным склонением
             formatted_nights = format_nights(night_num)
 
+            # Определяем значение для лечения
+            treatment_text = "с лечением" if with_treatment else "без лечения"
+
             # Загрузка шаблона
             template_path = resource_path("template.docx")
             doc = Document(template_path)
@@ -106,6 +110,7 @@ def generate_doc():
                 "{end_date}": formatted_end_date,
                 "{date_birth}": formatted_birth_date,
                 "{iin}": iin,
+                "{treatment}": treatment_text,
             }
 
             # Замена плейсхолдеров в параграфах
@@ -138,6 +143,5 @@ def generate_doc():
     return render_template("form.html")
 
 if __name__ == "__main__":
-    # Для сервера используем 0.0.0.0, чтобы приложение было доступно извне
-    port = int(os.getenv("PORT", 5000))  # Render использует переменную PORT
+    port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
