@@ -14,13 +14,12 @@ def resource_path(relative_path):
     return os.path.join(os.path.abspath("."), relative_path)
 
 # Функция для преобразования даты в формат "«день» месяц год г."
-def format_date(date_str):
+def format_date(date_obj):
     months = {
         1: "января", 2: "февраля", 3: "марта", 4: "апреля",
         5: "мая", 6: "июня", 7: "июля", 8: "августа",
         9: "сентября", 10: "октября", 11: "ноября", 12: "декабря"
     }
-    date_obj = datetime.strptime(date_str, "%d.%m.%Y")
     day = date_obj.day
     month = months[date_obj.month]
     year = date_obj.year
@@ -55,12 +54,29 @@ def format_nights(night_num):
     else:
         return f"{num} ночей"
 
+# Текст про лечение для класса "Люкс"
+luxe_treatment_text = """Лечение, включённое в номер "Люкс" на человека:
+• Консультация врача (в начале курса и при необходимости)
+• Пантогематоген — 50 мл натощак (ежедневно утром, на тощак)
+• Две пантовые ванны с гидромассажем в день (ежедневно) утром и вечером
+• Фитобочка с алтайскими травами (ежедневно) 1 раз
+• Фито-чай с мёдом (ежедневно) после фитобочки
+• Маска с пантовым отваром (ежедневно) 1 раз (после ванны)
+• Пантовые обёртывания в 5 дней 1 раз"""
+
+# Текст про лечение для класса "Стандарт"
+standard_treatment_text = """Лечение, включённое в номер "Стандарт" на человека:
+• Консультация врача (в начале курса и при необходимости)
+• Пантогематоген — 50 мл натощак (ежедневно утром, на тощак)
+• Одна пантовая ванна с гидромассажем (ежедневно)
+• Фитобочка с алтайскими травами (ежедневно 1 раз)
+• Фито-чай с мёдом (ежедневно, после фитобочки)"""
+
 @app.route("/", methods=["GET", "POST"])
 def generate_doc():
     if request.method == "POST":
         full_name = request.form["full_name"]
         contract_number = request.form["contract_number"]
-        date = request.form["date"]
         id_num = request.form["id_num"]
         night_num = request.form["night_num"]
         start_date = request.form["start_date"]
@@ -71,19 +87,45 @@ def generate_doc():
 
         # Формируем список туристов, начиная с full_name
         tourists = [f"1) {full_name}"]
-        # Добавляем дополнительных туристов из формы
         i = 0
         while True:
             tourist_name = request.form.get(f"tourist_{i}", "").strip()
-            if not tourist_name:  # Если поле пустое или отсутствует, прерываем цикл
+            if not tourist_name:
                 break
             tourists.append(f"{i + 2}) {tourist_name}")
             i += 1
         tourists_list = "\n".join(tourists)
 
+        # Формируем список номеров
+        rooms = []
+        room_classes = set()  # Множество для отслеживания классов номеров
+        i = 0
+        while True:
+            capacity = request.form.get(f"room_capacity_{i}")
+            room_class = request.form.get(f"room_class_{i}")
+            quantity = request.form.get(f"room_quantity_{i}")
+            if not capacity or not room_class or not quantity:
+                break
+            room_text = f"{capacity}-местный «{room_class}» *{quantity}шт номера"
+            rooms.append(room_text)
+            room_classes.add(room_class)  # Добавляем класс номера в множество
+            i += 1
+        rooms_list = "\n\n".join(rooms) if rooms else "Не указано"
+
+        # Формируем текст про лечение
+        treatment_details = []
+        if "Стандарт" in room_classes:
+            treatment_details.append(standard_treatment_text)
+        if "Люкс" in room_classes:
+            treatment_details.append(luxe_treatment_text)
+        treatment_details_text = "\n\n".join(treatment_details) if treatment_details else "Лечение не включено"
+
         try:
+            # Получаем текущую дату
+            current_date = datetime.today()
+            formatted_date = format_date(current_date)
+
             # Преобразуем даты
-            formatted_date = format_date(date)
             formatted_start_date = format_tour_date(start_date)
             formatted_end_date = format_tour_date(end_date)
             formatted_birth_date = format_tour_date(date_birth)
@@ -91,7 +133,7 @@ def generate_doc():
             # Форматируем количество ночей с правильным склонением
             formatted_nights = format_nights(night_num)
 
-            # Определяем значение для лечения
+            # Определяем значение для лечения (чекбокс "С лечением")
             treatment_text = "с лечением" if with_treatment else "без лечения"
 
             # Загрузка шаблона
@@ -105,12 +147,14 @@ def generate_doc():
                 "{date}": formatted_date,
                 "{id_num}": id_num,
                 "{tourists_list}": tourists_list,
+                "{rooms_list}": rooms_list,
                 "{night_num}": formatted_nights,
                 "{start_date}": formatted_start_date,
                 "{end_date}": formatted_end_date,
                 "{date_birth}": formatted_birth_date,
                 "{iin}": iin,
                 "{treatment}": treatment_text,
+                "{treatment_details}": treatment_details_text,
             }
 
             # Замена плейсхолдеров в параграфах

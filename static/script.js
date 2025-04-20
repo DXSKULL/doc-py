@@ -1,4 +1,5 @@
 let touristCount = 0;
+let roomCount = 0;
 
 function addTouristField() {
   const container = document.getElementById("tourists_fields");
@@ -39,6 +40,111 @@ function removeTouristField(fieldId) {
     field.id = `tourist_${index}`;
   });
   touristCount = fields.length;
+}
+
+function addRoomField() {
+  const container = document.getElementById("rooms_fields");
+  const roomDiv = document.createElement("div");
+  roomDiv.className = "room-field";
+  roomDiv.id = `room_${roomCount}`;
+
+  // Категория номера (число мест)
+  const capacityLabel = document.createElement("label");
+  capacityLabel.textContent = `Категория номера ${roomCount + 1} (число мест):`;
+  const capacityInput = document.createElement("input");
+  capacityInput.type = "number";
+  capacityInput.name = `room_capacity_${roomCount}`;
+  capacityInput.min = "1";
+  capacityInput.required = true;
+  const capacityBr = document.createElement("br");
+
+  // Класс номера (Стандарт/Люкс)
+  const classLabel = document.createElement("label");
+  classLabel.textContent = `Класс номера ${roomCount + 1}:`;
+  const classDiv = document.createElement("div");
+  classDiv.className = "radio-group";
+  
+  const standardInput = document.createElement("input");
+  standardInput.type = "radio";
+  standardInput.name = `room_class_${roomCount}`;
+  standardInput.value = "Стандарт";
+  standardInput.required = true;
+  standardInput.checked = true;
+  const standardLabel = document.createElement("label");
+  standardLabel.textContent = "Стандарт";
+  standardLabel.style.marginRight = "15px";
+
+  const luxeInput = document.createElement("input");
+  luxeInput.type = "radio";
+  luxeInput.name = `room_class_${roomCount}`;
+  luxeInput.value = "Люкс";
+  const luxeLabel = document.createElement("label");
+  luxeLabel.textContent = "Люкс";
+
+  classDiv.appendChild(standardInput);
+  classDiv.appendChild(standardLabel);
+  classDiv.appendChild(luxeInput);
+  classDiv.appendChild(luxeLabel);
+  const classBr = document.createElement("br");
+
+  // Количество номеров
+  const quantityLabel = document.createElement("label");
+  quantityLabel.textContent = `Кол-во номеров ${roomCount + 1}:`;
+  const quantityInput = document.createElement("input");
+  quantityInput.type = "number";
+  quantityInput.name = `room_quantity_${roomCount}`;
+  quantityInput.min = "1";
+  quantityInput.required = true;
+  const quantityBr = document.createElement("br");
+
+  // Кнопка "Удалить номер"
+  const removeButton = document.createElement("button");
+  removeButton.type = "button";
+  removeButton.textContent = "Удалить номер";
+  removeButton.onclick = () => removeRoomField(roomDiv.id);
+  const removeBr = document.createElement("br");
+
+  roomDiv.appendChild(capacityLabel);
+  roomDiv.appendChild(capacityInput);
+  roomDiv.appendChild(capacityBr);
+  roomDiv.appendChild(classLabel);
+  roomDiv.appendChild(classDiv);
+  roomDiv.appendChild(classBr);
+  roomDiv.appendChild(quantityLabel);
+  roomDiv.appendChild(quantityInput);
+  roomDiv.appendChild(quantityBr);
+  roomDiv.appendChild(removeButton);
+  roomDiv.appendChild(removeBr);
+  container.appendChild(roomDiv);
+
+  roomCount++;
+}
+
+function removeRoomField(fieldId) {
+  const field = document.getElementById(fieldId);
+  field.remove();
+  const fields = document.querySelectorAll(".room-field");
+  fields.forEach((field, index) => {
+    const capacityLabel = field.querySelector("label:nth-child(1)");
+    capacityLabel.textContent = `Категория номера ${index + 1} (число мест):`;
+    const capacityInput = field.querySelector(`input[name^="room_capacity_"]`);
+    capacityInput.name = `room_capacity_${index}`;
+
+    const classLabel = field.querySelector("label:nth-child(4)");
+    classLabel.textContent = `Класс номера ${index + 1}:`;
+    const classInputs = field.querySelectorAll(`input[name^="room_class_"]`);
+    classInputs.forEach(input => {
+      input.name = `room_class_${index}`;
+    });
+
+    const quantityLabel = field.querySelector("label:nth-child(7)");
+    quantityLabel.textContent = `Кол-во номеров ${index + 1}:`;
+    const quantityInput = field.querySelector(`input[name^="room_quantity_"]`);
+    quantityInput.name = `room_quantity_${index}`;
+
+    field.id = `room_${index}`;
+  });
+  roomCount = fields.length;
 }
 
 function handleKeyDown(event, input) {
@@ -196,20 +302,17 @@ function validateDates() {
   const startDateStr = document.getElementById("start_date").value;
   const endDateStr = document.getElementById("end_date").value;
 
-  // Проверяем, что даты введены полностью (дд.мм.гггг)
   const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
   if (!dateRegex.test(startDateStr) || !dateRegex.test(endDateStr)) {
     alert("Пожалуйста, введите даты в формате дд.мм.гггг");
     return false;
   }
 
-  // Парсим даты
   const [startDay, startMonth, startYear] = startDateStr.split('.').map(Number);
   const [endDay, endMonth, endYear] = endDateStr.split('.').map(Number);
   const startDate = new Date(startYear, startMonth - 1, startDay);
   const endDate = new Date(endYear, endMonth - 1, endDay);
 
-  // Проверяем, что дата выезда не раньше даты заезда
   if (endDate < startDate) {
     alert("Дата выезда не может быть раньше даты заезда!");
     return false;
@@ -231,7 +334,6 @@ function calculateNights() {
   const startDate = new Date(startYear, startMonth - 1, startDay);
   const endDate = new Date(endYear, endMonth - 1, endDay);
 
-  // Вычисляем разницу в днях
   const timeDiff = endDate - startDate;
   const nights = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 

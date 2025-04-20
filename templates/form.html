@@ -25,12 +25,13 @@
       <label for="contract_number">Номер договора:</label>
       <input type="text" id="contract_number" name="contract_number" required><br>
 
-      <label for="date">Дата (дд.мм.гггг):</label>
-      <input type="text" id="date" name="date" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
-
       <h3>Доп. туристы</h3>
       <div id="tourists_fields"></div>
       <button type="button" onclick="addTouristField()">Добавить туриста</button> <br>
+
+      <h3>Номера</h3>
+      <div id="rooms_fields"></div>
+      <button type="button" onclick="addRoomField()">Добавить номер</button> <br>
 
       <label for="start_date">Дата заезда (дд.мм.гггг):</label>
       <input type="text" id="start_date" name="start_date" placeholder="дд.мм.гггг" required oninput="formatDateInput(this, 'input')" onkeydown="handleKeyDown(event, this)" onbeforeinput="handleBeforeInput(event, this)"><br>
